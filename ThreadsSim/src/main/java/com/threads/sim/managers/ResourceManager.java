@@ -1,6 +1,7 @@
 package com.threads.sim.managers;
 
 import com.threads.sim.entities.Cell;
+import com.threads.sim.entities.SexualCell;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -12,18 +13,16 @@ public class ResourceManager {
     private AtomicInteger foodCount;
     private final Lock foodLock = new ReentrantLock();
     private final List<Cell> cells = new CopyOnWriteArrayList<>();
+    private final Lock reproductionLock = new ReentrantLock();
 
     public ResourceManager(int initialFoodCount) {
         this.foodCount = new AtomicInteger(initialFoodCount);
     }
 
     public boolean consumeFood() {
-        // Logic here needs a lock despite using AtomicInteger
-        // because there are 2 atomic operations in a sequence which doesn't guarantee thread safety
         foodLock.lock();
         try {
-            int current = foodCount.get();
-            if (current > 0) {
+            if (foodCount.get() > 0) {
                 foodCount.decrementAndGet();
                 return true;
             }
@@ -47,5 +46,23 @@ public class ResourceManager {
 
     public void removeCell(Cell cell) {
         cells.remove(cell);
+    }
+
+    public List<Cell> getCells() {
+        return cells;
+    }
+
+    public SexualCell findPartner(SexualCell requester) {
+        reproductionLock.lock();
+        try {
+            for (Cell c : cells) {
+                if (c instanceof SexualCell && c != requester && ((SexualCell) c).isReadyToMate()) {
+                    return (SexualCell) c;
+                }
+            }
+            return null;
+        } finally {
+            reproductionLock.unlock();
+        }
     }
 }
