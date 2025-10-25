@@ -9,14 +9,16 @@ public class AsexualCell extends Cell {
 
     @Override
     protected void reproduce() {
-        timesEaten = 0;
-        System.out.println("[AsexualCell #" + id + "] Reproduced → 2 new cells");
+        AsexualCell child1 = new AsexualCell((int) (Math.random() * 10000),
+                resourceManager, T_full, T_starve);
+        AsexualCell child2 = new AsexualCell((int) (Math.random() * 10000),
+                resourceManager, T_full, T_starve);
 
-        for (int i = 0; i < 2; i++) {
-            AsexualCell child = new AsexualCell((int) (Math.random() * 10000),
-                    resourceManager, T_full, T_starve);
-            resourceManager.addCell(child);
-            child.start();
-        }
+        System.out.println("[AsexualCell #" + id + "] Reproduced → 2 new cells (#" + child1.id + ", #" + child2.id + ")");
+
+        resourceManager.addCell(child1);
+        child1.start();
+        resourceManager.addCell(child2);
+        child2.start();
     }
 }

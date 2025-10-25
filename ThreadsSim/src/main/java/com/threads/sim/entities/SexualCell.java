@@ -15,35 +15,56 @@ public class SexualCell extends Cell {
 
     @Override
     protected void reproduce() {
-        readyToMate = true;
+        synchronized (this) {
+            readyToMate = true;
+        }
         System.out.println("[SexualCell #" + id + "] Ready to mate");
 
         for (int i = 0; i < 10; i++) { // retry up to 10 times
-            SexualCell partner = resourceManager.findPartner(this);
-            if (partner != null && partner != this) {
-                synchronized (partner) {
-                    readyToMate = false;
-                    partner.readyToMate = false;
-                    timesEaten = 0;
-                    partner.timesEaten = 0;
-
-                    SexualCell baby = new SexualCell((int) (Math.random() * 10000),
-                            resourceManager, T_full, T_starve);
-                    resourceManager.addCell(baby);
-                    baby.start();
-
-                    System.out.println("[SexualCell #" + id + "] Mated with #" + partner.id + " → 1 new cell");
+            synchronized (this) {
+                if (!readyToMate) {
+                    System.out.println("[SexualCell #" + id + "] Already mated as partner");
                     return;
                 }
             }
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+
+            SexualCell partner = resourceManager.findPartner(this);
+            if (partner != null && partner != this) {
+                Object firstLock = id < partner.id ? this : partner;
+                Object secondLock = id < partner.id ? partner : this;
+
+                synchronized (firstLock) {
+                    synchronized (secondLock) {
+                        if (!partner.isReadyToMate() || !this.readyToMate) {
+                            continue;
+                        }
+
+                        readyToMate = false;
+                        partner.readyToMate = false;
+
+                        SexualCell baby = new SexualCell((int) (Math.random() * 10000),
+                                resourceManager, T_full, T_starve);
+                        resourceManager.addCell(baby);
+                        baby.start();
+
+                        System.out.println("[SexualCell #" + id + "] Mated with #" + partner.id + " → 1 new cell (#" + baby.id + ")");
+                        return;
+                    }
+                }
+            }
+            synchronized (this) {
+                try {
+                    this.wait(300);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
             }
         }
 
         System.out.println("[SexualCell #" + id + "] Could not find mate after retries");
-        readyToMate = false;
+        synchronized (this) {
+            readyToMate = false;
+        }
     }
 }

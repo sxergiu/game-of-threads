@@ -27,18 +27,60 @@ public abstract class Cell extends Thread {
             while (alive) {
                 if (hungry) {
                     if (resourceManager.consumeFood()) {
-                        eat();
+                        boolean shouldReproduce;
+                        synchronized (this) {
+                            eat();
+                            shouldReproduce = shouldReproduce();
+                            if (shouldReproduce) {
+                                resetReproductionCounter();
+                            }
+                        }
+                        if (shouldReproduce) {
+                            reproduce();
+                        }
                     } else {
-                        Thread.sleep(T_starve);
-                        if (hungry) die();
+                        long starvationDeadline = System.currentTimeMillis() + T_starve;
+                        boolean foundFood = false;
+
+                        while (hungry && alive && System.currentTimeMillis() < starvationDeadline) {
+                            long remainingTime = starvationDeadline - System.currentTimeMillis();
+                            if (remainingTime <= 0) break;
+
+                            synchronized (resourceManager.getFoodMonitor()) {
+                                resourceManager.getFoodMonitor().wait(Math.min(remainingTime, 100));
+                            }
+
+                            if (resourceManager.consumeFood()) {
+                                boolean shouldReproduce;
+                                synchronized (this) {
+                                    eat();
+                                    shouldReproduce = shouldReproduce();
+                                    if (shouldReproduce) {
+                                        resetReproductionCounter();
+                                    }
+                                }
+                                if (shouldReproduce) {
+                                    reproduce();
+                                }
+                                foundFood = true;
+                                break;
+                            }
+                        }
+
+                        if (!foundFood && hungry && alive) {
+                            die();
+                        }
                     }
                 } else {
-                    Thread.sleep(T_full);
-                    hungry = true;
+                    synchronized (this) {
+                        this.wait(T_full);
+                        hungry = true;
+                    }
                 }
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            die();
         }
     }
 
@@ -46,10 +88,14 @@ public abstract class Cell extends Thread {
         timesEaten++;
         hungry = false;
         System.out.println("[" + getClass().getSimpleName() + " #" + id + "] Ate (total=" + timesEaten + ")");
-        if (timesEaten >= 10) {
-            reproduce();
-        }
-        Thread.sleep(200);
+    }
+
+    protected boolean shouldReproduce() {
+        return timesEaten >= 10;
+    }
+
+    protected void resetReproductionCounter() {
+        timesEaten = 0;
     }
 
     protected void die() {
