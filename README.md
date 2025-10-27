@@ -47,5 +47,5 @@ cd [Your Repo Name]
 ### 2. Compile the Java Files
 javac com/threads/sim/GameOfLife.java
 
-### Run the Main Class
+### 3. Run the Main Class
 java com.threads.sim.GameOfLife
