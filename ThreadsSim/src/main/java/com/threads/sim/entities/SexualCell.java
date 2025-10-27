@@ -20,6 +20,8 @@ public class SexualCell extends Cell {
         }
         System.out.println("[SexualCell #" + id + "] Ready to mate");
 
+        //while looking for a partner, another cell might found it and mated with it
+        //in that case, exit it's own search
         for (int i = 0; i < 10; i++) { // retry up to 10 times
             synchronized (this) {
                 if (!readyToMate) {
@@ -27,9 +29,11 @@ public class SexualCell extends Cell {
                     return;
                 }
             }
-
+            
+            //finding potential partner
             SexualCell partner = resourceManager.findPartner(this);
             if (partner != null && partner != this) {
+                //both cells must be locked to prevent other cells from mating with them
                 Object firstLock = id < partner.id ? this : partner;
                 Object secondLock = id < partner.id ? partner : this;
 
