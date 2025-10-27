@@ -40,8 +40,9 @@ Cells must **find food** to survive and **reproduce**, while the shared environm
 
 ### 1. Clone the Repository
 ```bash
-git clone [Your Repo URL]
+git clone https://github.com/sxergiu/game-of-threads.git
 cd [Your Repo Name]
+```
 
 ### 2. Compile the Java Files
 javac com/threads/sim/GameOfLife.java
