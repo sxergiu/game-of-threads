@@ -1,4 +1,4 @@
-# 🧬 Cellular Life Simulation (Multithreaded Java)
+v# 🧬 Cellular Life Simulation (Multithreaded Java)
 
 This repository contains a **multithreaded simulation of cellular life**, demonstrating key Java concurrency concepts such as **threads, atomic variables, synchronization, and locking mechanisms**.  
 The simulation models two types of cells — **Asexual** and **Sexual** — competing for a limited food resource in a shared environment.
@@ -41,7 +41,7 @@ Cells must **find food** to survive and **reproduce**, while the shared environm
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/sxergiu/game-of-threads.git
-cd [Your Repo Name]
+cd GameOfThreads/ThreadsSim
 ```
 
 ### 2. Compile the Java Files
