@@ -49,3 +49,56 @@ javac com/threads/sim/GameOfLife.java
 
 ### 3. Run the Main Class
 java com.threads.sim.GameOfLife
+
+## Architecture Diagram
+
+```mermaid
+
+flowchart LR
+
+%% Core components
+G["GameOfLife entrypoint"]
+AC["AsexualCell\nThread"]
+SC["SexualCell\nThread"]
+RM["ResourceManager"]
+
+G -->|"seed and start threads"| AC
+G --> SC
+G -->|"periodic stats"| RM
+
+%% Abstract base
+subgraph Model
+  direction TB
+  C["Cell (abstract thread)\nrun(): eat -> maybeReproduce -> sleep/die"]
+  C --> AC
+  C --> SC
+end
+
+%% Shared state & sync
+subgraph Shared_State_ResourceManager
+  direction TB
+  FP["foodPool: AtomicInteger"]
+  LC["livingCells: CopyOnWriteArrayList of Cell"]
+  RS["readySexuals: queue/list"]
+  ST["stats: AtomicInteger(s)"]
+  RL["reproductionLock: ReentrantLock"]
+end
+
+RM --- FP
+RM --- LC
+RM --- RS
+RM --- ST
+RM --- RL
+
+%% Interactions
+C -->|"consumeFood(), register/remove, reportStats"| RM
+AC -->|"requestAsexualReproduction()\n-> spawn 2 hungry children"| RM
+SC -->|"requestSexualReadiness(), pairIfPossible()\n-> spawn 1 hungry child"| RM
+
+%% Callouts
+N1["After 10 meals -> reproduce"]
+N2["Thread-safety via Atomics\nCOWAL, volatile flags\nReentrantLock"]
+C -.-> N1
+RM -.-> N2
+
+```
