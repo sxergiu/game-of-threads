@@ -3,7 +3,7 @@ package com.threads.sim.entities;
 import com.threads.sim.managers.ResourceManager;
 
 public class SexualCell extends Cell {
-    private boolean readyToMate = false;
+    private volatile boolean readyToMate = false;
 
     public SexualCell(int id, ResourceManager resourceManager, int T_full, int T_starve) {
         super(id, resourceManager, T_full, T_starve);
