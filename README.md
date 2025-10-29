@@ -1,4 +1,4 @@
-v# 🧬 Cellular Life Simulation (Multithreaded Java)
+🧬 Cellular Life Simulation (Multithreaded Java)
 
 This repository contains a **multithreaded simulation of cellular life**, demonstrating key Java concurrency concepts such as **threads, atomic variables, synchronization, and locking mechanisms**.  
 The simulation models two types of cells — **Asexual** and **Sexual** — competing for a limited food resource in a shared environment.
